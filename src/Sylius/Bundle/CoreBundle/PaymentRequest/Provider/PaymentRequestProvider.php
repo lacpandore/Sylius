@@ -11,16 +11,14 @@
 
 declare(strict_types=1);
 
-namespace Sylius\Bundle\ApiBundle\CommandHandler\Payment;
+namespace Sylius\Bundle\CoreBundle\PaymentRequest\Provider;
 
-use Sylius\Bundle\ApiBundle\Command\Payment\UpdatePaymentRequest;
+use Sylius\Bundle\CoreBundle\PaymentRequest\Command\PaymentRequestHashAwareInterface;
 use Sylius\Component\Payment\Exception\PaymentRequestNotFoundException;
 use Sylius\Component\Payment\Model\PaymentRequestInterface;
 use Sylius\Component\Payment\Repository\PaymentRequestRepositoryInterface;
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
-/** @experimental */
-final class UpdatePaymentRequestHandler implements MessageHandlerInterface
+final class PaymentRequestProvider implements PaymentRequestProviderInterface
 {
     /**
      * @param PaymentRequestRepositoryInterface<PaymentRequestInterface> $paymentRequestRepository
@@ -30,14 +28,12 @@ final class UpdatePaymentRequestHandler implements MessageHandlerInterface
     ) {
     }
 
-    public function __invoke(UpdatePaymentRequest $updatePaymentRequest): PaymentRequestInterface
+    public function provide(PaymentRequestHashAwareInterface $command): PaymentRequestInterface
     {
-        $paymentRequest = $this->paymentRequestRepository->find($updatePaymentRequest->getHash());
+        $paymentRequest = $this->paymentRequestRepository->find($command->getHash());
         if (null === $paymentRequest) {
             throw new PaymentRequestNotFoundException();
         }
-
-        $paymentRequest->setPayload($updatePaymentRequest->getPayload());
 
         return $paymentRequest;
     }
